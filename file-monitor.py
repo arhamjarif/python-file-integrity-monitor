@@ -2,24 +2,17 @@ import os,hashlib,json
 
 def snapshot(abs_directory:str):
     snapshot_data = {}
-    walk_data = []
-    filepaths = []
     files_no = 0
 
-    #use os.walk() to get dirpaths and files
+    #use os.walk() to get dirpaths and files, makes hashes for each file and stores in snapshot_data
     for dirpath,dirs,files in os.walk(abs_directory):
-         walk_data.append((dirpath,dirs,files))
-    for i in range(0,len(walk_data)):
-        if walk_data[i][2]:
-            for j in range(0,len(walk_data[i][2])):
-                filepaths.append(f'{walk_data[i][0]}/{walk_data[i][2][j]}') #make filepaths
-
-    #make hashes for each file and store in snapshot_data
-    for i in filepaths:
-        with open(i, 'rb') as file:
-            file_hash = hashlib.sha256(file.read()).hexdigest()
-            snapshot_data[i] = file_hash
-            files_no += 1
+         if files:
+            for filename in files:
+                with open(f'{dirpath}/{filename}', 'rb') as file:
+                    file_hash = hashlib.sha256(file.read()).hexdigest()
+                    snapshot_data[f'{dirpath}/{filename}'] = file_hash
+                    files_no += 1
+                    
     return snapshot_data, files_no
 
 def assign():
@@ -45,9 +38,9 @@ def assign():
 
             #print output
             print('========== DIRECTORY ASSIGNMENT ==========\n')  
-            print(f'Monitoring Directoy:\n{abs_directory}\n\nFiles Scanned: {scanned_files_no}\n')
+            print(f'Monitoring Directory:\n{abs_directory}\n\nFiles Scanned: {scanned_files_no}\n')
             if prev_snapshot_check:
-                print('Previous snapshot found. Snapshot will be overwritten')
+                print('Previous snapshot found. Snapshot updated successfully')
             else:
                 print('No previous snapshot found.')
             print('Future scans will compare against this snapshot')
@@ -116,7 +109,7 @@ def compare():
             print('Scan Complete.')
             break
         except(FileNotFoundError):
-            print('Entered directory does not exist or is not being monitored. Please try again.')
+            print('Entered directory does not exist or is not currently being monitored. Please try again.')
 
 print('========== FILE INTEGRITY MONITOR ==========\n')
 while True:
